@@ -22,8 +22,8 @@ A brutally honest second opinion for your messages, job offers, and contracts. G
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/your-repo/red-flag.git
-   cd red-flag
+   git clone https://github.com/your-repo/redflag.git
+   cd redflag
    ```
 
 2. **Install dependencies**
