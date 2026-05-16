@@ -229,6 +229,13 @@ export function Navigation() {
         }`}
         style={{ top: 0 }}
       >
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="absolute right-6 top-6 p-2"
+          aria-label="Close menu"
+        >
+          <X className="w-6 h-6" />
+        </button>
         <div className="flex flex-col h-full px-8 pt-28 pb-8">
           {/* Navigation Links */}
           <div className="flex-1 flex flex-col justify-center gap-8">
