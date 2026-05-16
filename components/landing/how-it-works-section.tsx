@@ -1,333 +1,106 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useEffect, useRef, useState } from "react";
 
-const landingNavLinks = [
-  { name: "How it works", href: "#how-it-works" },
-  { name: "Example", href: "#example" },
-  { name: "Contexts", href: "#contexts" },
-  { name: "Testimonials", href: "#testimonials" },
+const steps = [
+  {
+    number: "01",
+    title: "Paste",
+    description: "Drop in whatever's making you uneasy.",
+  },
+  {
+    number: "02",
+    title: "Pick context",
+    description: "Tell us what we're looking at.",
+  },
+  {
+    number: "03",
+    title: "Get the truth",
+    description: "Red flags, green flags, verdict. No fluff.",
+  },
 ];
 
-const authedNavLinks = [
-  { name: "Analyze", href: "/#hero" },
-  { name: "History", href: "/history" },
-  { name: "Privacy", href: "/privacy" },
-];
-
-export function Navigation() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [userLabel, setUserLabel] = useState<string | null>(null);
-  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+export function HowItWorksSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    let isMounted = true;
-
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      const label =
-        user?.user_metadata?.full_name || user?.email || user?.id || null;
-      const avatar =
-        typeof user?.user_metadata?.picture === "string"
-          ? user.user_metadata.picture
-          : null;
-      if (isMounted) {
-        setUserLabel(label);
-        setUserAvatar(avatar);
-      }
-    };
-
-    loadSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const user = session?.user;
-        const label =
-          user?.user_metadata?.full_name || user?.email || user?.id || null;
-        const avatar =
-          typeof user?.user_metadata?.picture === "string"
-            ? user.user_metadata.picture
-            : null;
-        if (isMounted) {
-          setUserLabel(label);
-          setUserAvatar(avatar);
-        }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
       },
+      { threshold: 0.1 },
     );
 
-    return () => {
-      isMounted = false;
-      authListener.subscription.unsubscribe();
-    };
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
   }, []);
 
-  const handleSignOut = async () => {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    setUserLabel(null);
-    setUserAvatar(null);
-  };
-
-  const navLinks = userLabel ? authedNavLinks : landingNavLinks;
-
   return (
-    <header
-      className={`fixed z-50 transition-all duration-500 ${
-        isScrolled ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
-      }`}
+    <section
+      id="how-it-works"
+      ref={sectionRef}
+      className="relative py-24 lg:py-32 bg-foreground text-background overflow-hidden"
     >
-      <nav
-        className={`mx-auto transition-all duration-500 ${
-          isScrolled || isMobileMenuOpen
-            ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-[1200px]"
-            : "bg-transparent max-w-[1400px]"
-        }`}
-      >
-        <div
-          className={`flex items-center justify-between transition-all duration-500 px-6 lg:px-8 ${
-            isScrolled ? "h-14" : "h-20"
-          }`}
-        >
-          {/* Logo */}
-          <a href="/" className="flex items-center gap-2 group">
-            <img
-              src="/emoji-no-bg.ico"
-              alt=""
-              aria-hidden="true"
-              className={`transition-all duration-500 ${
-                isScrolled ? "h-7 w-7" : "h-8 w-8"
-              }`}
-            />
-            <span
-              className={`font-display tracking-tight transition-all duration-500 ${
-                isScrolled ? "text-xl" : "text-2xl"
-              }`}
-            >
-              <span className="text-red-600">Red</span> Flag
-            </span>
-            <span
-              className={`text-muted-foreground font-mono transition-all duration-500 ${
-                isScrolled ? "text-[10px] mt-0.5" : "text-xs mt-1"
-              }`}
-            >
-              Catcher
-            </span>
-          </a>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-12">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-sm text-foreground/70 hover:text-foreground transition-colors duration-300 relative group"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-px bg-foreground transition-all duration-300 group-hover:w-full" />
-              </a>
-            ))}
-          </div>
-
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-4">
-            {userLabel ? (
-              <>
-                <a
-                  href="/history"
-                  className="flex items-center gap-2 text-xs font-mono text-muted-foreground max-w-[220px]"
-                  title={userLabel}
-                >
-                  {userAvatar ? (
-                    <img
-                      src={userAvatar}
-                      alt={userLabel}
-                      className="w-7 h-7 rounded-full border border-foreground/10"
-                    />
-                  ) : (
-                    <span className="w-7 h-7 rounded-full border border-foreground/10 flex items-center justify-center text-[10px] font-semibold text-foreground/70">
-                      {userLabel.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="truncate">{userLabel}</span>
-                </a>
-                <Button
-                  asChild
-                  size="sm"
-                  className={`bg-foreground hover:bg-foreground/90 text-background rounded-full transition-all duration-500 ${
-                    isScrolled ? "px-4 h-8 text-xs" : "px-6"
-                  }`}
-                >
-                  <a href="/#hero">New analysis</a>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-full border-foreground/20"
-                  onClick={handleSignOut}
-                >
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <a
-                  href="/auth/login"
-                  className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${
-                    isScrolled ? "text-xs" : "text-sm"
-                  }`}
-                >
-                  Log in
-                </a>
-                <Button
-                  asChild
-                  size="sm"
-                  className={`bg-foreground hover:bg-foreground/90 text-background rounded-full transition-all duration-500 ${
-                    isScrolled ? "px-4 h-8 text-xs" : "px-6"
-                  }`}
-                >
-                  <a href="#hero">Try it free</a>
-                </Button>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2"
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu - Full Screen Overlay */}
-      <div
-        className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 ${
-          isMobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-        style={{ top: 0 }}
-      >
-        <button
-          onClick={() => setIsMobileMenuOpen(false)}
-          className="absolute right-6 top-6 p-2"
-          aria-label="Close menu"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        <div className="flex flex-col h-full px-8 pt-28 pb-8">
-          {/* Navigation Links */}
-          <div className="flex-1 flex flex-col justify-center gap-8">
-            {navLinks.map((link, i) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-5xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 ${
-                  isMobileMenuOpen
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
-                }`}
-                style={{
-                  transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : "0ms",
-                }}
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
-
-          {/* Bottom CTAs */}
-          <div
-            className={`flex gap-4 pt-8 border-t border-foreground/10 transition-all duration-500 ${
-              isMobileMenuOpen
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12">
+        {/* Header */}
+        <div className="mb-16 lg:mb-20">
+          <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6">
+            <span className="w-8 h-px bg-background/30" />
+            How it works
+          </span>
+          <h2
+            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
+              isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-4"
             }`}
-            style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
-            {userLabel ? (
-              <div className="flex-1 flex flex-col gap-3">
-                <a
-                  href="/history"
-                  className="flex items-center gap-2 text-xs font-mono text-muted-foreground"
-                  title={userLabel}
-                >
-                  {userAvatar ? (
-                    <img
-                      src={userAvatar}
-                      alt={userLabel}
-                      className="w-7 h-7 rounded-full border border-foreground/10"
-                    />
-                  ) : (
-                    <span className="w-7 h-7 rounded-full border border-foreground/10 flex items-center justify-center text-[10px] font-semibold text-foreground/70">
-                      {userLabel.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="truncate">{userLabel}</span>
-                </a>
-                <Button
-                  variant="outline"
-                  className="rounded-full h-14 text-base"
-                  onClick={() => {
-                    handleSignOut();
-                    setIsMobileMenuOpen(false);
+            Three steps.
+            <br />
+            <span className="text-background/50">Zero excuses.</span>
+          </h2>
+        </div>
+
+        {/* Steps */}
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          {steps.map((step, index) => (
+            <div
+              key={step.number}
+              className={`relative border border-background/10 bg-background/5 p-6 lg:p-8 transition-all duration-700 hover:-translate-y-1 ${
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-6"
+              }`}
+              style={{ transitionDelay: `${index * 120}ms` }}
+            >
+              {/* Grid Background */}
+              <div className="absolute inset-0 opacity-85 pointer-events-none">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+                    `,
+                    backgroundSize: "24px 24px",
                   }}
-                >
-                  Log out
-                </Button>
+                />
               </div>
-            ) : (
-              <Button
-                variant="outline"
-                className="flex-1 rounded-full h-14 text-base"
-                onClick={() => setIsMobileMenuOpen(false)}
-                asChild
-              >
-                <a href="/auth/login">Log in</a>
-              </Button>
-            )}
-            {userLabel ? (
-              <Button
-                className="flex-1 bg-foreground text-background rounded-full h-14 text-base"
-                onClick={() => setIsMobileMenuOpen(false)}
-                asChild
-              >
-                <a href="/#hero">New analysis</a>
-              </Button>
-            ) : (
-              <Button
-                className="flex-1 bg-foreground text-background rounded-full h-14 text-base"
-                onClick={() => setIsMobileMenuOpen(false)}
-                asChild
-              >
-                <a href="#hero">Try it free</a>
-              </Button>
-            )}
-          </div>
+
+              <div className="relative z-10">
+                <div className="font-mono text-sm text-background/40 mb-4">
+                  {step.number}
+                </div>
+                <h3 className="text-2xl font-display mb-3">{step.title}</h3>
+                <p className="text-background/70 leading-relaxed">
+                  {step.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </header>
+    </section>
   );
 }
