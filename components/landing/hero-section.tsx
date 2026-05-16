@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSphere } from "./animated-sphere";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -238,20 +239,28 @@ export function HeroSection() {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            {headline.split("").map((char, index, arr) => {
-              // Highlight "the truth" (last 9 chars excluding the final period)
-              const isTruth =
-                index >= arr.length - 10 && index < arr.length - 1;
-              return (
-                <span
-                  key={`${char}-${index}`}
-                  className={`inline-block animate-char-in ${isTruth ? "text-destructive" : ""}`}
-                  style={{ animationDelay: `${index * 30}ms` }}
-                >
-                  {char === " " ? "\u00A0" : char}
-                </span>
-              );
-            })}
+            <span className="block md:hidden">
+              <span className="block">Paste it.</span>
+              <span className="block">
+                Find out the <span className="text-destructive">truth.</span>
+              </span>
+            </span>
+            <span className="hidden md:block">
+              {headline.split("").map((char, index, arr) => {
+                // Highlight "the truth" (last 9 chars excluding the final period)
+                const isTruth =
+                  index >= arr.length - 10 && index < arr.length - 1;
+                return (
+                  <span
+                    key={`${char}-${index}`}
+                    className={`inline-block animate-char-in ${isTruth ? "text-destructive" : ""}`}
+                    style={{ animationDelay: `${index * 30}ms` }}
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </span>
+                );
+              })}
+            </span>
           </h1>
 
           <p
@@ -263,6 +272,16 @@ export function HeroSection() {
           >
             {subheadline}
           </p>
+          <div className="-mb-5 mt-2 flex justify-center">
+            <a
+              href="#how-it-works"
+              className="inline-flex mt-1 items-center gap-2 rounded-full border border-foreground/20 bg-background/60 px-3 py-1.5 text-xs font-mono text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
+              aria-label="Scroll down for more information"
+            >
+              <span>Scroll to understand what do we catch</span>
+              <ChevronDown className="h-4 w-4 animate-bounce" />
+            </a>
+          </div>
         </div>
 
         <form
